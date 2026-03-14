@@ -2,175 +2,190 @@
 <html>
 
 <head>
-<title>Gas Monitoring Dashboard</title>
+    <title>Gas Monitoring Dashboard</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<style>
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, rgb(92, 9, 88), #111230, #020103, rgb(2, 14, 85));
+            color: rgb(255, 255, 255);
+            text-align: center;
+        }
 
-body{
-font-family:Arial;
-background:linear-gradient(135deg,rgb(92, 9, 88),#111230,#020103,rgb(2, 14, 85));
-color:rgb(255, 255, 255);
-text-align:center;
-}
+        .card {
+            background: white;
+            color: rgb(0, 0, 0);
+            width: 320px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s ease-in-out;
+        }
 
-.card{
-background:white;
-color:rgb(0, 0, 0);
-width:320px;
-margin:auto;
-padding:25px;
-border-radius:15px;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-animation:fadeIn 1s ease-in-out;
-}
+        .safe {
+            color: green;
+            font-weight: bold;
+            font-size: 20px;
+        }
 
-.safe{
-color:green;
-font-weight:bold;
-font-size:20px;
-}
+        .danger {
+            color: red;
+            font-weight: bold;
+            font-size: 20px;
+            animation: blink 1s infinite;
+        }
 
-.danger{
-color:red;
-font-weight:bold;
-font-size:20px;
-animation:blink 1s infinite;
-}
+        table {
+            margin: auto;
+            margin-top: 30px;
+            background: white;
+            color: black;
+            border-collapse: collapse;
+        }
 
-table{
-margin:auto;
-margin-top:30px;
-background:white;
-color:black;
-border-collapse:collapse;
-}
+        td,
+        th {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
 
-td,th{
-padding:10px;
-border:1px solid #ccc;
-}
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
 
-@keyframes fadeIn{
-from{opacity:0; transform:translateY(20px);}
-to{opacity:1; transform:translateY(0);}
-}
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-@keyframes blink{
-0%{opacity:1;}
-50%{opacity:0;}
-100%{opacity:1;}
-}
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
 
-</style>
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
 
 </head>
 
 <body>
 
-<h1>Gas Monitoring System</h1>
-<p>● Live Sensor Monitoring</p>
+    <h1>Gas Monitoring System</h1>
+    <p>● Live Sensor Monitoring</p>
 
-<div class="card">
+    <div class="card">
 
-<h2>Current Reading</h2>
+        <h2>Current Reading</h2>
 
-{% if latest %}
+        {% if latest %}
 
-<p><b>Gas Type:</b> {{ latest.gas_type }}</p>
+        <p><b>Gas Type:</b> {{ latest.gas_type }}</p>
 
-<h1>{{ latest.value }}</h1>
+        <h1>{{ latest.value }}</h1>
 
-{% if latest.is_safe %}
-<p class="safe">SAFE</p>
-{% else %}
-<p class="danger">DANGER</p>
-{% endif %}
+        {% if latest.is_safe %}
+        <p class="safe">SAFE</p>
 
-{% else %}
+        {% elif latest.error %}
+        <p class="danger">DANGER</p>
 
-<p>No data yet</p>
+        {% else %}
 
-{% endif %}
+        <p>No data yet</p>
 
-</div>
+        {% endif %}
 
-<h2>Gas Level Graph</h2>
+    </div>
 
-<canvas id="gasChart" width="600" height="300"></canvas>
+    <h2>Gas Level Graph</h2>
 
-<h2>Previous Readings</h2>
+    <canvas id="gasChart" width="600" height="300"></canvas>
 
-<table>
+    <h2>Previous Readings</h2>
 
-<tr>
-<th>Value</th>
-<th>Status</th>
-<th>Time</th>
-</tr>
+    <table>
 
-{% for r in history %}
+        <tr>
+            <th>Value</th>
+            <th>Status</th>
+            <th>Time</th>
+        </tr>
 
-<tr>
+        {% for r in history %}
 
-<td>{{ r.value }}</td>
+        <tr>
 
-<td>
-{% if r.is_safe %}
-SAFE
-{% else %}
-DANGER
-{% endif %}
-</td>
+            <td>{{ r.value }}</td>
 
-<td>{{ r.timestamp }}</td>
+            <td>
+                {% if r.is_safe %}
+                SAFE
+                {% else %}
+                DANGER
+                {% endif %}
+            </td>
 
-</tr>
+            <td>{{ r.timestamp }}</td>
 
-{% endfor %}
+        </tr>
 
-</table>
+        {% endfor %}
 
-<script>
+    </table>
 
-const values = [
-{% for r in history %}
-{{ r.value }}
-{% endfor %}
+    <script>
+
+        const values = [
+            {% for r in history %}
+        { { r.value } }
+        {% endfor %}
 ];
 
-const ctx = document.getElementById('gasChart');
+        const ctx = document.getElementById('gasChart');
 
-new Chart(ctx, {
-type: 'line',
-data: {
-labels: values.map((_,i)=>i+1),
-datasets: [{
-label: 'Gas Level',
-data: values,
-tension:0.4,
-fill:true
-}]
-},
-options:{
-animation:{
-duration:2000
-}
-}
-});
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: values.map((_, i) => i + 1),
+                datasets: [{
+                    label: 'Gas Level',
+                    data: values,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                animation: {
+                    duration: 2000
+                }
+            }
+        });
 
-setTimeout(function(){
-location.reload();
-},3000);
+        setTimeout(function () {
+            location.reload();
+        }, 3000);
 
-</script>
+    </script>
 
-{% if latest and not latest.is_safe %}
-<script>
-alert("⚠ WARNING! Gas Level Dangerous!");
-</script>
-{% endif %}
+    {% if latest and not latest.is_safe %}
+    <script>
+        alert("⚠ WARNING! Gas Level Dangerous!");
+    </script>
+    {% endif %}
 
 </body>
+
 </html>
