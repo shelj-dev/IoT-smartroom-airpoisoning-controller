@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>{{ gas }} Details</title>
+</head>
+
+<body>
+
+<h1>{{ gas }} History</h1>
+{% if readings %}
+<table border="1">
+
+<tr>
+<th>Value</th>
+<th>Status</th>
+<th>Time</th>
+</tr>
+
+{% for r in readings %}
+
+<tr>
+
+<td>{{ r.value }}</td>
+
+<td>
+
+{% if r.is_safe %}
+SAFE
+{% else %}
+DANGER
+{% endif %}
+
+</td>
+
+<td>{{ r.timestamp }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+{% else %}
+<p>No readings available</p>
+{% endif %}
+</body>
+</html>
