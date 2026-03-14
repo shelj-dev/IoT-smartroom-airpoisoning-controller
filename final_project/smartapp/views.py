@@ -1,8 +1,9 @@
 import json
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import GasReading
+from .models import SensorData, Limit
+from .forms import limitForm
 
 
 SAFE_LIMIT = 300
@@ -19,27 +20,33 @@ def receive_sensor_data(request):
 
         print("Sensor Value:", value)
 
-        safe = value < SAFE_LIMIT
-
-        GasReading.objects.create(
-            gas_type="COMBUSTIBLE_GAS",
-            value=value,
-            is_safe=safe
-        )
-
+        SensorData.objects.create(value=value)
+        
         return JsonResponse({
             "status": "saved",
             "value": value,
-            "safe": safe
         })
 
     return JsonResponse({"error": "POST required"})
 
 
+
+def update_threshold(request):
+    data = Limit.objects.first() 
+
+    if request.method == 'POST':
+        form = limitForm(request.POST , instance=data)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:        
+        form = limitForm(instance=data)
+        return render(request, 'update_threshold.html'  , {'form': form})
+    
 def dashboard(request):
 
-    latest = GasReading.objects.order_by('-timestamp').first()
-    history = GasReading.objects.order_by('-timestamp')[:20]
+    latest = SensorData.objects.last()
+    history = SensorData.objects.order_by('-timestamp')[:10]
 
     return render(request, "dashboard.html", {
         "latest": latest,
