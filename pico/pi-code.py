@@ -6,11 +6,12 @@ from machine import ADC
 WIFI_SSID = "iot kids"
 WIFI_PASSWORD = "bright kidoos"
 
-SERVER_IP_URL = "http://10.189.178.236:8000/"
+
+SERVER_IP_URL = "http://10.163.201.215:8000/"
 
 wifi_status = False
 
-# MQ2 sensor on ADC pin
+
 mq2 = ADC(28)
 
 
@@ -28,7 +29,7 @@ def connect_wifi():
     print("Connecting to WiFi...")
     wlan.connect(WIFI_SSID, WIFI_PASSWORD)
 
-    timeout = 5
+    timeout = 10
     while timeout > 0 and not wlan.isconnected():
         print("Waiting for connection...")
         time.sleep(1)
@@ -54,7 +55,7 @@ def sensor_data():
 def send_data(data):
 
     payload = {
-        "sensor": data
+        "value": data
     }
 
     url = SERVER_IP_URL + "api/get-sensor/"
@@ -62,8 +63,9 @@ def send_data(data):
     r = None
 
     try:
-        r = urequests.post(url, json=payload)
-        print("Server response:", r.text)
+        
+        r = urequests.post(url, json=payload, timeout=5)
+        print("Sending to:", url)
 
     except Exception as e:
         print("Send error:", e)

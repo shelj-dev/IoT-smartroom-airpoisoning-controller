@@ -1,140 +1,227 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>Gas Monitoring Dashboard</title>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body {
-            font-family: Arial;
-            background: linear-gradient(135deg, rgb(92, 9, 88), #111230, #020103, rgb(2, 14, 85));
-            color: white;
-            text-align: center;
+      body {
+        font-family: Arial;
+        background: linear-gradient(135deg, rgb(92, 9, 88), #111230, #020103, rgb(2, 14, 85));
+        color: white;
+        text-align: center;
+      }
+      
+      .card {
+        background: white;
+        color: black;
+        width: 320px;
+        margin: auto;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 1s ease-in-out;
+      }
+      
+      .safe {
+        color: green;
+        font-weight: bold;
+        font-size: 20px;
+      }
+      
+      .danger {
+        color: red;
+        font-weight: bold;
+        font-size: 20px;
+        animation: blink 1s infinite;
+      }
+      
+      table {
+        margin: auto;
+        margin-top: 30px;
+        background: white;
+        color: black;
+        border-collapse: collapse;
+      }
+      
+      td,
+      th {
+        padding: 10px;
+        border: 1px solid #ccc;
+      }
+      
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
         }
-
-        .card {
-            background: white;
-            color: black;
-            width: 320px;
-            margin: auto;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: fadeIn 1s ease-in-out;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-
-        .safe {
-            color: green;
-            font-weight: bold;
-            font-size: 20px;
+      }
+      
+      @keyframes blink {
+        0% {
+          opacity: 1;
         }
-
-        .danger {
-            color: red;
-            font-weight: bold;
-            font-size: 20px;
-            animation: blink 1s infinite;
+        50% {
+          opacity: 0;
         }
-
-        table {
-            margin: auto;
-            margin-top: 30px;
-            background: white;
-            color: black;
-            border-collapse: collapse;
+        100% {
+          opacity: 1;
         }
-
-        td, th {
-            padding: 10px;
-            border: 1px solid #ccc;
+      }
+      #dangerOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 0, 0, 0.85);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+      }
+      
+      .dangerBox {
+        background: white;
+        color: red;
+        font-size: 40px;
+        font-weight: bold;
+        padding: 40px;
+        border-radius: 15px;
+        animation: blink 1s infinite;
+      }
+      
+      body.dangerMode {
+        border: 20px solid red;
+        animation: borderBlink 1s infinite;
+      }
+      
+      @keyframes borderBlink {
+        0% {
+          border-color: red;
         }
-
-        @keyframes fadeIn {
-            from {opacity:0; transform:translateY(20px);}
-            to {opacity:1; transform:translateY(0);}
+        50% {
+          border-color: transparent;
         }
-
-        @keyframes blink {
-            0%{opacity:1;}
-            50%{opacity:0;}
-            100%{opacity:1;}
+        100% {
+          border-color: red;
         }
+      }
+      nav {
+        background-color: #170629;
+        color: white;
+        padding: 300px;
+        padding-bottom: 0px;
+        padding-top: 0px;
+      }
+      
+      li,
+      h1,
+      ul {
+        display: inline;
+      }
+      
+      ul {
+        margin-left: 10%;
+      }
+      
+      li {
+        margin-left: 25px;
+      }
     </style>
+  </head>
 
-</head>
+  <body>
+    <nav>
+      <h1>Hazard</h1>
 
-<body>
+      <ul>
+        <li>Home</li>
+        <li>About</li>
+        <li>Help</li>
+        <li>Temperature</li>
+        <li>Humidity</li>
+        <li>logs</li>
+        <li>settings</li>
+      </ul>
+    </nav>
+    <audio id="alarm" src="{% static 'alarm.mp3' %}" preload="auto"></audio>
+    <div id="dangerOverlay">
+      <div class="dangerBox">
+        ⚠ GAS LEAK DETECTED ⚠
+        <br />
+        Please check immediately!
+      </div>
+    </div>
 
-<h1>Gas Monitoring System</h1>
-<p>● Live Sensor Monitoring</p>
+    <button onclick="enableSound()">Enable Sound</button>
 
-<div class="card">
+    <h1>Gas Monitoring System</h1>
+    <p>● Live Sensor Monitoring</p>
 
-<h2>Current Reading</h2>
+    <div class="card">
+      <h2>Current Reading</h2>
 
-{% if latest %}
+      {% if latest %}
+        <p>
+          <b>Gas Type:</b> {{ latest.gas_type }}
+        </p>
 
-<p><b>Gas Type:</b> {{ latest.gas_type }}</p>
+        <h1>{{ latest.value }}</h1>
 
-<h1>{{ latest.value }}</h1>
+        {% if latest.is_safe %}
+          <p class="safe">SAFE</p>
+        {% else %}
+          <p class="danger">DANGER</p>
+        {% endif %}
+      {% else %}
+        <p>No data yet</p>
+      {% endif %}
+    </div>
 
-{% if latest.is_safe %}
-<p class="safe">SAFE</p>
+    <h2>Gas Level Graph</h2>
 
-{% else %}
-<p class="danger">DANGER</p>
+    <canvas id="gasChart" width="600" height="300"></canvas>
 
-{% endif %}
+    <h2>Previous Readings</h2>
 
-{% else %}
-<p>No data yet</p>
-{% endif %}
+    <table>
+      <tr>
+        <th>Value</th>
+        <th>Status</th>
+        <th>Time</th>
+      </tr>
 
-</div>
+      {% for r in history %}
+        <tr>
+          <td>{{ r.value }}</td>
 
-<h2>Gas Level Graph</h2>
+          <td>
+            {% if r.is_safe %}
+              SAFE
+            {% else %}
+              DANGER
+            {% endif %}
+          </td>
 
-<canvas id="gasChart" width="600" height="300"></canvas>
+          <td>{{ r.timestamp }}</td>
+        </tr>
+      {% endfor %}
+    </table>
 
-<h2>Previous Readings</h2>
-
-<table>
-
-<tr>
-<th>Value</th>
-<th>Status</th>
-<th>Time</th>
-</tr>
-
-{% for r in history %}
-
-<tr>
-
-<td>{{ r.value }}</td>
-
-<td>
-{% if r.is_safe %}
-SAFE
-{% else %}
-DANGER
-{% endif %}
-</td>
-
-<td>{{ r.timestamp }}</td>
-
-</tr>
-
-{% endfor %}
-
-</table>
-
-<script>
+    <script>
 
 const values = [
 {% for r in history %}
 {{ r.value }},
+{% empty %}
+0
 {% endfor %}
 ];
 
@@ -162,13 +249,28 @@ setTimeout(function () {
     location.reload();
 }, 3000);
 
+
 </script>
 
-{% if latest and not latest.is_safe %}
-<script>
-alert("⚠ WARNING! Gas Level Dangerous!");
-</script>
-{% endif %}
+    <script>
 
-</body>
+function checkDanger(){
+    let safe = "{{ latest.is_safe|yesno:'true,false' }}";
+
+    if(safe === "false"){
+
+        document.body.classList.add("dangerMode");
+
+        document.getElementById("dangerOverlay").style.display = "flex";
+
+        document.getElementById("alarm").play().catch(() => {});
+
+    }
+
+}
+
+checkDanger();
+
+</script>
+  </body>
 </html>
