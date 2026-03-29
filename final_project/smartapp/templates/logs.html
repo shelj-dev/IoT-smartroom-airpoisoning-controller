@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Logs{% endblock %}
+
+{% block content %}
+
+<h2>Previous Readings</h2>
+<div class="month-bar">
+    <a href="/logs?month=1" class="{% if selected_month == 1 %}active{% endif %}">Jan</a>
+    <a href="/logs?month=2" class="{% if selected_month == 2 %}active{% endif %}">Feb</a>
+    <a href="/logs?month=3" class="{% if selected_month == 3 %}active{% endif %}">Mar</a>
+    <a href="/logs?month=4" class="{% if selected_month == 4 %}active{% endif %}">Apr</a>
+    <a href="/logs?month=5" class="{% if selected_month == 5 %}active{% endif %}">May</a>
+    <a href="/logs?month=6" class="{% if selected_month == 6 %}active{% endif %}">Jun</a>
+    <a href="/logs?month=7" class="{% if selected_month == 7 %}active{% endif %}">Jul</a>
+    <a href="/logs?month=8" class="{% if selected_month == 8 %}active{% endif %}">Aug</a>
+    <a href="/logs?month=9" class="{% if selected_month == 9 %}active{% endif %}">Sep</a>
+    <a href="/logs?month=10" class="{% if selected_month == 10 %}active{% endif %}">Oct</a>
+    <a href="/logs?month=11" class="{% if selected_month == 11 %}active{% endif %}">Nov</a>
+    <a href="/logs?month=12" class="{% if selected_month == 12 %}active{% endif %}">Dec</a>
+    
+    
+</div>
+
+<div class="table-container">
+   
+
+<table>
+<tr>
+    <th>Value</th>
+    <th>Status</th>
+    <th>Time</th>
+</tr>
+
+{% for r in history %}
+<tr class="{% if not r.is_safe %}danger-row{% endif %}">
+    <td>{{ r.value }}</td>
+    <td>
+        {% if r.is_safe %} SAFE {% else %} DANGER {% endif %}
+    </td>
+    <td>{{ r.timestamp }}</td>
+</tr>
+{% endfor %}
+
+</table>
+</div>
+{% endblock %}

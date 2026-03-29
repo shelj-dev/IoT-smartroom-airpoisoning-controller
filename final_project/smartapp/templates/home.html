@@ -1,49 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-         nav {
-            
-            color: white;
-            padding: 20px;
-            padding-bottom: 0px;
-            padding-top: 0px;
-        } 
+{% extends 'base.html' %}
+{% load static %}
 
-        li,
-        h1,
-        ul {
-            display: inline;
-        }
+{% block content %}
 
-        ul {
-            margin-left: 10%;
 
-        }
 
-        li {
-            margin-left: 25px;
-        }
-    </style>
-</head>
-<body>
-    <nav>
-    <h1>Hazard Air Monitor</h1>
+<audio id="alarm" src="{% static 'alarm.mp3' %}" preload="auto"></audio>
 
-    <ul>
-            <li>Home</li>
-            <li>About</li>
-            <li>Help</li>
-            <li>Temperature</li>
-            <li>Humidity</li>
-            <li>logs</li>
-            <li>settings</li>
-        </ul>
+<div id="dangerOverlay">
+  <div class="dangerBox">
+    <span class="close-btn" onclick="closeAlert()">✖</span>
+    ⚠ GAS LEAK DETECTED ⚠
+    <br />
+    Please check immediately!
+  </div>
+</div>
 
-    </nav>
-    <hr>
-</body>
-</html>
+<button onclick="enableSound()"></button>
+
+<h1>Gas Monitoring System</h1>
+<p>● Live Sensor Monitoring</p>
+
+<div class="card">
+  <h2>Current Reading</h2>
+
+  {% if latest %}
+    <p><b>Gas Type:</b> {{ latest.gas_type }}</p>
+    <h1>{{ latest.value }}</h1>
+
+    {% if latest.is_safe %}
+      <p class="safe">SAFE</p>
+    {% else %}
+      <p class="danger">DANGER</p>
+    {% endif %}
+  {% endif %}
+</div>
+
+<script>
+function checkDanger(){
+    let safe = "{{ latest.is_safe|yesno:'true,false' }}";
+
+    if(safe === "false"){
+        document.body.classList.add("dangerMode");
+        document.getElementById("dangerOverlay").style.display = "flex";
+        document.getElementById("alarm").play().catch(() => {});
+    }
+}
+function closeAlert(){
+    document.getElementById("dangerOverlay").style.display = "none";
+    document.body.classList.remove("dangerMode");
+}
+setInterval(function () {
+    location.reload();
+}, 5000);
+checkDanger();
+</script>
+
+{% endblock %}

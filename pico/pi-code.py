@@ -7,7 +7,7 @@ WIFI_SSID = "iot kids"
 WIFI_PASSWORD = "bright kidoos"
 
 
-SERVER_IP_URL = "http://10.163.201.215:8000/"
+SERVER_IP_URL = "http://10.244.94.215:8000/"
 
 wifi_status = False
 

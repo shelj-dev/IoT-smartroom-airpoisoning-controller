@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Graph{% endblock %}
+
+{% block content %}
+
+<h2>Gas Level Graph</h2>
+
+<div class="graph-container">
+    <canvas id="gasChart"></canvas>
+</div>
+
+<script>
+const values = [
+{% for r in history %}
+{{ r.value }},
+{% empty %}
+0
+{% endfor %}
+];
+
+const ctx = document.getElementById('gasChart');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: values.map((_, i) => i + 1),
+        datasets: [{
+            label: 'Gas Level',
+            data: values,
+            tension: 0.4
+        }]
+    }
+});
+</script>
+
+{% endblock %}
