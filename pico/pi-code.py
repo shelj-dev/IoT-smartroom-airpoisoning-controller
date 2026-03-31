@@ -3,11 +3,11 @@ import time
 import urequests
 from machine import ADC
 
-WIFI_SSID = "iot kids"
-WIFI_PASSWORD = "bright kidoos"
+WIFI_SSID = "CSELABWIFI"
+WIFI_PASSWORD = "274998csc"
 
 
-SERVER_IP_URL = "http://10.244.94.215:8000/"
+SERVER_IP_URL = "http://192.168.25.23:8000/"
 
 wifi_status = False
 

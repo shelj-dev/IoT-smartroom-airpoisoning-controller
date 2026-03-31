@@ -7,7 +7,7 @@ from .forms import limitForm
 from datetime import datetime
 
 
-SAFE_LIMIT = 4000
+SAFE_LIMIT = 5000
 
 
 @csrf_exempt
@@ -93,3 +93,6 @@ def about(request):
 
 def help_page(request):
     return render(request, "help.html", {"page": "help"})
+
+
+
